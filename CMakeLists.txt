@@ -3,7 +3,8 @@ project(aglrl)
 
 add_subdirectory(deps/glfw)
 
-include_directories(deps/glfw/include
+include_directories(src
+					deps/glfw/include
 					deps/glad/include
 					deps/glm)
 
