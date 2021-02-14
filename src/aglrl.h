@@ -3,16 +3,32 @@
 
 #include <glm/glm.hpp>
 
-#include "IEventHandler.h"
+#include "EventHandler.h"
 #include "Viewport.h"
 #include "types.h"
+#include "Drawable.h"
+#include "Triangle.h"
+#include "Shader.h"
 
 namespace aglrl {
+	enum class Flag {
+		GL_VERSION_MAJOR,
+		GL_VERSION_MINOR,
+		GL_PROFILE
+	};
+
+	enum class GLProfile {
+		CORE,
+		COMPATIBILITY
+	};
+
 	extern Viewport viewport;
 
-	void registerEventHandler(IEventHandler& eventHandler);
+	template<typename T>
+	void setFlag(Flag flag, T value);
 
 	//user-defined
+	void setting();
 	void start();
 	void tick();
 }

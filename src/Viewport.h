@@ -10,34 +10,39 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <string>
+#include <iostream>
 
-#include "IEventHandler.h"
+#include "EventHandler.h"
 #include "types.h"
 
 namespace aglrl {
-	class Viewport : public IEventHandler{
+	class Viewport : public EventHandler{
 	private:
-		int m_InitialWidth, m_InitialHeight;
-		std::string m_Title;
+		std::string m_Title = "aglrl";
 		GLFWwindow* m_Window;
 
 		static void resizeCallback(GLFWwindow* window, int width, int height)
 		{
 			glViewport(0, 0, width, height);
 		}
+
 	public:
+		void onInit() override
+		{
+			m_Window = glfwCreateWindow(1, 1,
+										m_Title.c_str(), nullptr, nullptr);
+			glfwSetWindowSizeCallback(m_Window, resizeCallback);
+		}
+
 		int getWidth() const { int width; glfwGetWindowSize(m_Window, &width, nullptr); return width; }
 		int getHeight() const { int height; glfwGetWindowSize(m_Window, nullptr, &height); return height; }
-		
+		std::string getTitle() const { return m_Title; }
 		Color getBackgroundColor() const
 		{
 			glm::vec4 color;
 			glGetFloatv(GL_COLOR_CLEAR_VALUE, glm::value_ptr(color));
 			return color;
 		}
-		
-		std::string getTitle() const { return m_Title; }
-		bool shouldClose() const { return glfwWindowShouldClose(m_Window); }
 
 		Viewport& setWidth(int width) { glfwSetWindowSize(m_Window, width, getHeight()); return *this; }
 		Viewport& setHeight(int height) { glfwSetWindowSize(m_Window, getWidth(), height); return *this; }
@@ -49,20 +54,12 @@ namespace aglrl {
 			return *this;
 		}
 
-		Viewport(int width, int height, std::string title) :
-			m_InitialWidth(width), m_InitialHeight(height), m_Title(title),
-			m_Window(nullptr) {}
-
-		void onInit() override 
-		{
-			m_Window = glfwCreateWindow(m_InitialWidth, m_InitialHeight, 
-										m_Title.c_str(), nullptr, nullptr);
-			glfwSetWindowSizeCallback(m_Window, resizeCallback);
-		}
+		bool shouldClose() const { return glfwWindowShouldClose(m_Window); }
 		
 		void bind() { glfwMakeContextCurrent(m_Window); }
 		void frame() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); }
 		void update() { glfwSwapBuffers(m_Window); }
+		void loadGL() { gladLoadGL(); }
 	};
 }
 

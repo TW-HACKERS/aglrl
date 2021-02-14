@@ -1,4 +1,5 @@
-#include <list>
+#include <vector>
+#include <iostream>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -7,70 +8,54 @@
 
 using namespace aglrl;
 
-Viewport aglrl::viewport(800, 600, "aglrl");
-
-namespace {
-	std::list<IEventHandler*> eventHandlers;
-}
-
-void init()
-{
-	glfwInit();
-	
-	//set GL context version
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	auto i = eventHandlers.begin();
-	while (i != eventHandlers.end()) {
-		(*i)->onInit();
-		++i;
-	}
-
-	viewport.bind();
-	gladLoadGL();
-	viewport.setBackgroundColor(Color(0.2f, 0.2f, 0.2f, 1.0f));
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-}
-
-void render()
-{
-
-}
-
-void clean()
-{
-	glfwTerminate();
-}
+Viewport aglrl::viewport;
 
 int main()
 {
-	registerEventHandler(viewport);
+	Triangle* triangle = new Triangle;
 
-	init();
+	EventHandler::registerHandler(&viewport);
+	EventHandler::registerHandler(triangle);
 
+	Drawable::addDrawable("triangle", triangle);
+
+	glfwInit();
+	setting();
+	EventHandler::triggerEvent("init");
+	viewport.bind();
+	viewport.loadGL();
+	EventHandler::triggerEvent("GLLoaded");
+
+	//user-defined, run one time
 	start();
-
+	
 	while (!viewport.shouldClose()) {
 		glfwPollEvents();
-
 		viewport.frame();
-
+		//user-defined, runs every frame
 		tick();
-
-		render();
-
 		viewport.update();
 	}
 
-	clean();
+	glfwTerminate();
 	return 0;
 }
 
-void aglrl::registerEventHandler(IEventHandler& eventHandler) { eventHandlers.push_back(&eventHandler); }
+template<>
+void aglrl::setFlag<int>(Flag flag, int value)
+{
+	switch (flag) {
+	case Flag::GL_VERSION_MAJOR: glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, value); break;
+	case Flag::GL_VERSION_MINOR: glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, value); break;
+	}
+}
+
+template<>
+void aglrl::setFlag<GLProfile>(Flag flag, GLProfile value)
+{
+	switch (flag) {
+	case Flag::GL_PROFILE: 
+		if (value == GLProfile::CORE) glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		if (value == GLProfile::COMPATIBILITY) glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+	}
+}
