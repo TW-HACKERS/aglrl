@@ -32,8 +32,8 @@ void aglrl::Shader::addShader(std::string name, std::string vertexPath, std::str
 		std::ostringstream vertexStream, fragmentStream, geometryStream;
 		
 		vertexFile.open(vertexPath);
-		fragmentFile.open(fragmentPath);
 		vertexStream << vertexFile.rdbuf();
+		fragmentFile.open(fragmentPath);
 		fragmentStream << fragmentFile.rdbuf();
 		vertexString = vertexStream.str();
 		fragmentString = fragmentStream.str();
